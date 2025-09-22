@@ -1,6 +1,13 @@
 terraform {
   required_version = ">= 1.5.0"
 
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.67"
+    }
+  }
+
   cloud {
     organization = "IBM-ORG"
 
@@ -11,13 +18,7 @@ terraform {
 }
 
 provider "aws" {
-  version = "4.67"
-  region  = var.aws_region
-}
-
-variable "aws_region" {
-  default     = "us-east-1"
-  description = "AWS region to deploy resources"
+  region = var.aws_region
 }
 
 variable "cluster_name" {
