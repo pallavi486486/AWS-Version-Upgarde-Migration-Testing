@@ -9,10 +9,10 @@ terraform {
   }
 
   cloud {
-    organization = "IBM-ORG"
+    organization = "your-organization-name"
 
     workspaces {
-      name = "AWS-Version-Upgarde-Migration-Testing"
+      name = "aws-eks-workspace"
     }
   }
 }
@@ -21,9 +21,16 @@ provider "aws" {
   region = var.aws_region
 }
 
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  type        = string
+  default     = "us-east-1"
+}
+
 variable "cluster_name" {
-  default     = "simple-eks-cluster"
   description = "EKS cluster name"
+  type        = string
+  default     = "simple-eks-cluster"
 }
 
 # IAM Role for EKS Cluster
@@ -49,21 +56,21 @@ resource "aws_iam_role_policy_attachment" "eks_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-# EKS Cluster with default VPC and Managed Node Group
-resource "aws_eks_cluster" "simple" {
-  name     = var.cluster_name
-  role_arn = aws_iam_role.eks_role.arn
-
-  # Use default VPC
-  vpc_config {
-    subnet_ids = data.aws_subnets.default.ids
-  }
-}
-
+# Use Default VPC subnets
 data "aws_subnets" "default" {
   filter {
     name   = "default-for-az"
     values = ["true"]
+  }
+}
+
+# EKS Cluster
+resource "aws_eks_cluster" "simple" {
+  name     = var.cluster_name
+  role_arn = aws_iam_role.eks_role.arn
+
+  vpc_config {
+    subnet_ids = data.aws_subnets.default.ids
   }
 }
 
@@ -79,6 +86,10 @@ resource "aws_cloudwatch_event_rule" "example" {
 # Outputs
 output "eks_cluster_name" {
   value = aws_eks_cluster.simple.name
+}
+
+output "eks_cluster_endpoint" {
+  value = aws_eks_cluster.simple.endpoint
 }
 
 output "cloudwatch_event_rule_arn" {
