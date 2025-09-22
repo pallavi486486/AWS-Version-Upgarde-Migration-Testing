@@ -62,6 +62,12 @@ data "aws_subnets" "default" {
     name   = "default-for-az"
     values = ["true"]
   }
+
+  # Only use supported AZs
+  filter {
+    name   = "availability-zone"
+    values = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  }
 }
 
 # EKS Cluster
